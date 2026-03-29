@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CapitalEdge — Fintech & Business Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #0d0d0b;
+    --ink-60: rgba(13,13,11,0.6);
+    --ink-20: rgba(13,13,11,0.12);
+    --cream: #f7f5f0;
+    --cream-2: #eeeae0;
+    --gold: #b8975a;
+    --gold-light: #e8d5a8;
+    --teal: #1a6b52;
+    --teal-light: #d4ede5;
+    --teal-mid: #2d9172;
+    --white: #ffffff;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 4px;
+    --radius-lg: 12px;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sans); background: var(--cream); color: var(--ink); overflow-x: hidden; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--cream); }
+  ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+  /* Animations */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes slideRight { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+  @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+  @keyframes pulse-ring { 0%{transform:scale(1);opacity:0.4;} 100%{transform:scale(1.4);opacity:0;} }
+  @keyframes countUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes lineGrow { from { width:0; } to { width:100%; } }
+
+  .fade-up { animation: fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both; }
+  .fade-up-1 { animation-delay: 0.1s; }
+  .fade-up-2 { animation-delay: 0.2s; }
+  .fade-up-3 { animation-delay: 0.3s; }
+  .fade-up-4 { animation-delay: 0.4s; }
+  .fade-up-5 { animation-delay: 0.5s; }
+
+  /* ── NAV ── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 clamp(1.25rem, 5vw, 4rem); height: 64px;
+    background: rgba(247,245,240,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--ink-20);
+    transition: box-shadow 0.3s;
+  }
+  .nav.scrolled { box-shadow: 0 2px 24px rgba(0,0,0,0.07); }
+  .nav-logo { font-family: var(--serif); font-size: 1.4rem; font-weight: 600; color: var(--ink); letter-spacing: 0.01em; cursor: pointer; }
+  .nav-logo span { color: var(--teal); }
+  .nav-links { display: flex; align-items: center; gap: 2rem; }
+  .nav-links a { font-size: 0.82rem; font-weight: 400; color: var(--ink-60); text-decoration: none; letter-spacing: 0.03em; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--teal); }
+  .nav-cta {
+    font-size: 0.8rem; font-weight: 500; padding: 8px 20px;
+    background: var(--teal); color: var(--white); border: none;
+    border-radius: var(--radius); cursor: pointer; letter-spacing: 0.04em;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .nav-cta:hover { background: #155c45; transform: translateY(-1px); }
+  .nav-cta:active { transform: translateY(0); }
+  .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+  .nav-hamburger span { display: block; width: 22px; height: 1.5px; background: var(--ink); transition: 0.3s; border-radius: 2px; }
+  .mobile-menu {
+    display: none; position: fixed; top: 64px; left: 0; right: 0; z-index: 99;
+    background: var(--cream); border-bottom: 1px solid var(--ink-20);
+    padding: 1.5rem clamp(1.25rem,5vw,4rem);
+    flex-direction: column; gap: 1rem;
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-size: 1rem; color: var(--ink-60); text-decoration: none; padding: 0.5rem 0; border-bottom: 1px solid var(--ink-20); }
+  .mobile-menu a:last-child { border-bottom: none; }
+  .mobile-menu .nav-cta { align-self: flex-start; margin-top: 0.5rem; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100svh; padding-top: 64px;
+    display: grid; place-items: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background: var(--cream);
+  }
+  .hero-bg-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(13,13,11,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(13,13,11,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .hero-accent-line {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--teal), var(--gold), transparent);
+  }
+  .hero-blob {
+    position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.18;
+  }
+  .hero-blob-1 { width: 500px; height: 500px; background: var(--teal); top: -100px; right: -100px; }
+  .hero-blob-2 { width: 350px; height: 350px; background: var(--gold); bottom: 0; left: -80px; }
+  .hero-inner {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 1100px; margin: 0 auto;
+    padding: clamp(3rem,8vh,6rem) clamp(1.25rem,5vw,4rem);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+  }
+  .hero-eyebrow {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;
+  }
+  .hero-eyebrow-line { width: 32px; height: 1px; background: var(--teal); }
+  .hero-eyebrow-text { font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); font-weight: 500; }
+  .hero h1 {
+    font-family: var(--serif); font-size: clamp(2.8rem, 5.5vw, 4.2rem);
+    font-weight: 500; line-height: 1.1; margin-bottom: 1.5rem;
+    color: var(--ink);
+  }
+  .hero h1 em { font-style: italic; color: var(--teal); }
+  .hero-desc {
+    font-size: clamp(0.9rem, 1.4vw, 1rem); color: var(--ink-60); line-height: 1.75;
+    margin-bottom: 2.5rem; max-width: 480px;
+  }
+  .hero-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 28px; background: var(--teal); color: var(--white);
+    font-size: 0.85rem; font-weight: 500; letter-spacing: 0.04em;
+    border: none; border-radius: var(--radius); cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  }
+  .btn-primary:hover { background: #155c45; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,107,82,0.25); }
+  .btn-outline {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 26px; background: transparent; color: var(--ink);
+    font-size: 0.85rem; font-weight: 400; letter-spacing: 0.03em;
+    border: 1px solid var(--ink-20); border-radius: var(--radius); cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, transform 0.15s;
+  }
+  .btn-outline:hover { border-color: var(--teal); color: var(--teal); transform: translateY(-2px); }
+  .hero-trust { display: flex; align-items: center; gap: 1rem; margin-top: 2rem; }
+  .hero-trust-avatars { display: flex; }
+  .hero-trust-avatar {
+    width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--cream);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 500; margin-left: -8px;
+  }
+  .hero-trust-avatar:first-child { margin-left: 0; }
+  .hero-trust-text { font-size: 0.78rem; color: var(--ink-60); }
+  .hero-trust-text strong { color: var(--ink); font-weight: 500; }
+
+  /* Hero card */
+  .hero-card-wrap {
+    display: flex; flex-direction: column; gap: 1rem;
+    animation: float 6s ease-in-out infinite;
+  }
+  .hero-card {
+    background: var(--white); border: 1px solid var(--ink-20);
+    border-radius: var(--radius-lg); padding: 1.5rem;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.06);
+  }
+  .hero-card-label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-60); margin-bottom: 0.75rem; }
+  .hero-card-metric { font-family: var(--serif); font-size: 2.2rem; font-weight: 500; color: var(--ink); line-height: 1; }
+  .hero-card-metric span { font-size: 1rem; color: var(--teal); font-family: var(--sans); font-weight: 500; margin-left: 6px; }
+  .hero-card-bar-wrap { margin-top: 1rem; }
+  .hero-card-bar-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; font-size: 0.75rem; color: var(--ink-60); }
+  .hero-card-bar { height: 4px; background: var(--cream-2); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+  .hero-card-bar-fill { height: 100%; background: var(--teal); border-radius: 2px; animation: slideRight 1.2s cubic-bezier(0.22,1,0.36,1) 0.5s both; transform-origin: left; }
+  .hero-card-mini { display: flex; gap: 0.75rem; }
+  .hero-card-mini-item { flex: 1; background: var(--cream); border-radius: 8px; padding: 0.75rem; }
+  .hero-card-mini-val { font-family: var(--serif); font-size: 1.3rem; font-weight: 500; color: var(--ink); }
+  .hero-card-mini-label { font-size: 0.7rem; color: var(--ink-60); margin-top: 2px; }
+
+  /* ── TICKER ── */
+  .ticker { background: var(--ink); overflow: hidden; height: 42px; display: flex; align-items: center; }
+  .ticker-track { display: flex; animation: ticker-scroll 30s linear infinite; white-space: nowrap; }
+  @keyframes ticker-scroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+  .ticker-item { display: flex; align-items: center; gap: 0.75rem; padding: 0 2rem; font-size: 0.75rem; color: rgba(255,255,255,0.6); letter-spacing: 0.06em; text-transform: uppercase; }
+  .ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+
+  /* ── STATS ── */
+  .stats { background: var(--white); }
+  .stats-inner { max-width: 1100px; margin: 0 auto; padding: clamp(3rem,6vh,4rem) clamp(1.25rem,5vw,4rem); }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--ink-20); border-radius: var(--radius-lg); overflow: hidden; }
+  .stat-item { padding: 2rem 1.5rem; border-right: 1px solid var(--ink-20); position: relative; }
+  .stat-item:last-child { border-right: none; }
+  .stat-item::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--teal); transform: scaleX(0); transform-origin: left; transition: transform 0.4s cubic-bezier(0.22,1,0.36,1); }
+  .stat-item:hover::after { transform: scaleX(1); }
+  .stat-num { font-family: var(--serif); font-size: clamp(2rem,3.5vw,2.6rem); font-weight: 500; color: var(--ink); line-height: 1; }
+  .stat-unit { font-size: 1rem; color: var(--teal); margin-left: 2px; }
+  .stat-label { font-size: 0.78rem; color: var(--ink-60); margin-top: 6px; letter-spacing: 0.02em; }
+
+  /* ── SECTION COMMON ── */
+  .section { padding: clamp(4rem,8vh,6rem) clamp(1.25rem,5vw,4rem); max-width: 1100px; margin: 0 auto; }
+  .section-header { margin-bottom: clamp(2.5rem,5vh,4rem); }
+  .eyebrow { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+  .eyebrow-line { width: 28px; height: 1px; background: var(--teal); }
+  .eyebrow-text { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); font-weight: 500; }
+  .section-title { font-family: var(--serif); font-size: clamp(2rem,4vw,3rem); font-weight: 500; line-height: 1.15; color: var(--ink); }
+  .section-title em { font-style: italic; color: var(--teal); }
+  .section-desc { font-size: 0.95rem; color: var(--ink-60); line-height: 1.75; max-width: 560px; margin-top: 1rem; }
+
+  /* ── SERVICES ── */
+  .services-bg { background: var(--cream); }
+  .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--ink-20); border-radius: var(--radius-lg); overflow: hidden; }
+  .service-card {
+    background: var(--cream); padding: 2.5rem 2rem;
+    transition: background 0.3s; cursor: pointer; position: relative; overflow: hidden;
+  }
+  .service-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--teal-light), transparent);
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .service-card:hover { background: var(--white); }
+  .service-card:hover::before { opacity: 1; }
+  .service-num { font-family: var(--serif); font-size: 3.5rem; font-weight: 400; color: var(--ink-20); line-height: 1; margin-bottom: 1.25rem; }
+  .service-icon-wrap {
+    width: 48px; height: 48px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--teal-light); margin-bottom: 1.25rem;
+    position: relative; z-index: 1;
+  }
+  .service-icon-wrap svg { width: 22px; height: 22px; color: var(--teal); }
+  .service-title { font-family: var(--serif); font-size: 1.4rem; font-weight: 500; color: var(--ink); margin-bottom: 0.75rem; position: relative; z-index: 1; }
+  .service-desc { font-size: 0.85rem; color: var(--ink-60); line-height: 1.7; position: relative; z-index: 1; }
+  .service-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 1.25rem; position: relative; z-index: 1; }
+  .tag {
+    font-size: 0.7rem; padding: 4px 10px; border-radius: 99px;
+    background: rgba(13,13,11,0.06); color: var(--ink-60); letter-spacing: 0.03em;
+    transition: background 0.2s, color 0.2s;
+  }
+  .service-card:hover .tag { background: rgba(26,107,82,0.12); color: var(--teal); }
+
+  /* ── PROCESS ── */
+  .process-bg { background: var(--ink); }
+  .process-section { max-width: 1100px; margin: 0 auto; padding: clamp(4rem,8vh,6rem) clamp(1.25rem,5vw,4rem); }
+  .process-section .eyebrow-line { background: var(--gold); }
+  .process-section .eyebrow-text { color: var(--gold); }
+  .process-section .section-title { color: var(--white); }
+  .process-section .section-desc { color: rgba(255,255,255,0.55); }
+  .process-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 3rem; }
+  .process-step { padding: 2.5rem 2rem; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-lg); position: relative; overflow: hidden; }
+  .process-step::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 0.4s; }
+  .process-step:hover::after { transform: scaleX(1); }
+  .process-step-num { font-family: var(--serif); font-size: 4rem; font-weight: 400; color: rgba(255,255,255,0.08); line-height: 1; margin-bottom: 1.5rem; }
+  .process-step-title { font-family: var(--serif); font-size: 1.3rem; color: var(--white); margin-bottom: 0.75rem; }
+  .process-step-desc { font-size: 0.83rem; color: rgba(255,255,255,0.5); line-height: 1.7; }
+  .process-step-connector { display: none; }
+
+  /* ── PRICING ── */
+  .pricing-bg { background: var(--cream); }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .plan-card {
+    background: var(--white); border: 1px solid var(--ink-20);
+    border-radius: var(--radius-lg); padding: 2rem;
+    transition: transform 0.25s, box-shadow 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .plan-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+  .plan-card.featured { border: 2px solid var(--teal); }
+  .plan-card.featured::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--teal), var(--gold)); }
+  .plan-badge { display: inline-block; background: var(--teal); color: var(--white); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 12px; border-radius: 99px; margin-bottom: 1.25rem; }
+  .plan-name { font-family: var(--serif); font-size: 1.5rem; font-weight: 500; color: var(--ink); margin-bottom: 0.5rem; }
+  .plan-desc { font-size: 0.8rem; color: var(--ink-60); line-height: 1.6; margin-bottom: 1.5rem; }
+  .plan-price { margin-bottom: 1.75rem; }
+  .plan-price-val { font-family: var(--serif); font-size: 2.4rem; font-weight: 500; color: var(--teal); }
+  .plan-price-period { font-size: 0.8rem; color: var(--ink-60); margin-left: 4px; }
+  .plan-features { list-style: none; margin-bottom: 2rem; }
+  .plan-features li { font-size: 0.82rem; color: var(--ink-60); padding: 8px 0; border-bottom: 1px solid var(--ink-20); display: flex; align-items: flex-start; gap: 10px; }
+  .plan-features li:last-child { border-bottom: none; }
+  .plan-features li::before { content: ''; display: block; width: 14px; height: 14px; border-radius: 50%; background: var(--teal-light); flex-shrink: 0; margin-top: 1px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M3 7l3 3 5-5' stroke='%231a6b52' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E"); }
+  .plan-btn { width: 100%; padding: 12px; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.04em; border-radius: var(--radius); cursor: pointer; transition: all 0.2s; }
+  .plan-btn-outline { background: transparent; border: 1px solid var(--ink-20); color: var(--ink); }
+  .plan-btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+  .plan-btn-fill { background: var(--teal); border: none; color: var(--white); }
+  .plan-btn-fill:hover { background: #155c45; box-shadow: 0 6px 20px rgba(26,107,82,0.3); transform: translateY(-1px); }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials-bg { background: var(--white); }
+  .testimonials-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+  .testimonial-card { background: var(--cream); border: 1px solid var(--ink-20); border-radius: var(--radius-lg); padding: 2rem; transition: transform 0.25s; }
+  .testimonial-card:hover { transform: translateY(-3px); }
+  .testimonial-quote { font-family: var(--serif); font-size: 1.05rem; font-style: italic; color: var(--ink); line-height: 1.7; margin-bottom: 1.5rem; }
+  .testimonial-quote::before { content: '\201C'; font-size: 2.5rem; color: var(--teal); line-height: 0; vertical-align: -0.6em; margin-right: 4px; font-family: var(--serif); }
+  .testimonial-author { display: flex; align-items: center; gap: 12px; }
+  .testimonial-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500; color: var(--teal); background: var(--teal-light); flex-shrink: 0; }
+  .testimonial-name { font-size: 0.85rem; font-weight: 500; color: var(--ink); }
+  .testimonial-role { font-size: 0.75rem; color: var(--ink-60); }
+  .testimonial-rating { display: flex; gap: 2px; margin-bottom: 1rem; }
+  .star { color: var(--gold); font-size: 0.9rem; }
+
+  /* ── CTA ── */
+  .cta-bg { background: var(--teal); }
+  .cta-section { max-width: 1100px; margin: 0 auto; padding: clamp(4rem,8vh,6rem) clamp(1.25rem,5vw,4rem); }
+  .cta-inner { display: grid; grid-template-columns: 1fr auto; gap: 3rem; align-items: center; }
+  .cta-title { font-family: var(--serif); font-size: clamp(2rem,4vw,3rem); font-weight: 500; color: var(--white); line-height: 1.15; }
+  .cta-title em { font-style: italic; color: var(--gold-light); }
+  .cta-desc { font-size: 0.92rem; color: rgba(255,255,255,0.65); line-height: 1.7; margin-top: 0.75rem; }
+  .cta-actions { display: flex; flex-direction: column; gap: 1rem; flex-shrink: 0; }
+  .btn-white { padding: 14px 32px; background: var(--white); color: var(--teal); font-size: 0.85rem; font-weight: 500; letter-spacing: 0.04em; border: none; border-radius: var(--radius); cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .btn-white:hover { background: var(--cream); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+  .btn-ghost { padding: 13px 32px; background: transparent; color: rgba(255,255,255,0.8); font-size: 0.85rem; font-weight: 400; letter-spacing: 0.04em; border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius); cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.7); color: var(--white); }
+
+  /* ── FOOTER ── */
+  .footer { background: var(--ink); color: rgba(255,255,255,0.45); }
+  .footer-inner { max-width: 1100px; margin: 0 auto; padding: 3rem clamp(1.25rem,5vw,4rem) 2rem; }
+  .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+  .footer-brand-name { font-family: var(--serif); font-size: 1.3rem; color: var(--white); margin-bottom: 0.75rem; }
+  .footer-brand-name span { color: var(--teal-mid); }
+  .footer-brand-desc { font-size: 0.8rem; line-height: 1.7; max-width: 280px; }
+  .footer-col-title { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 1rem; font-weight: 500; }
+  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+  .footer-links li a { font-size: 0.8rem; color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.2s; }
+  .footer-links li a:hover { color: rgba(255,255,255,0.8); }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .footer-copy { font-size: 0.75rem; }
+  .footer-legal { display: flex; gap: 1.5rem; }
+  .footer-legal a { font-size: 0.75rem; color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.2s; }
+  .footer-legal a:hover { color: rgba(255,255,255,0.6); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .nav-links { display: none; }
+    .nav-hamburger { display: flex; }
+    .hero-inner { grid-template-columns: 1fr; gap: 3rem; padding-top: 3rem; }
+    .hero-card-wrap { animation: none; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat-item:nth-child(2) { border-right: none; }
+    .stat-item:nth-child(3) { border-right: 1px solid var(--ink-20); border-top: 1px solid var(--ink-20); }
+    .stat-item:nth-child(4) { border-right: none; border-top: 1px solid var(--ink-20); }
+    .services-grid { grid-template-columns: 1fr; }
+    .process-steps { grid-template-columns: 1fr; gap: 1rem; }
+    .pricing-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .testimonials-grid { grid-template-columns: 1fr; }
+    .cta-inner { grid-template-columns: 1fr; gap: 2rem; }
+    .cta-actions { flex-direction: row; flex-wrap: wrap; }
+    .footer-top { grid-template-columns: 1fr 1fr; gap: 2rem; }
+  }
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 2.4rem; }
+    .hero-actions { flex-direction: column; align-items: flex-start; }
+    .stats-grid { grid-template-columns: 1fr 1fr; border-radius: 8px; }
+    .stat-item { padding: 1.25rem 1rem; }
+    .stat-item:nth-child(even) { border-right: none; }
+    .stat-item:nth-child(n+3) { border-top: 1px solid var(--ink-20); }
+    .stat-item { border-right: 1px solid var(--ink-20); }
+    .footer-top { grid-template-columns: 1fr; gap: 1.5rem; }
+    .footer-bottom { flex-direction: column; align-items: flex-start; }
+    .cta-actions { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// SVG Icons
+const Icon = ({ name, size = 22 }) => {
+  const icons = {
+    fintech: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>,
+    consulting: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10m-6 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"/></svg>,
+    capital: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>,
+    compliance: <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+    arrow: <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>,
+    menu: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>,
+    x: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>,
+  };
+  return icons[name] || null;
+};
+
+// Counter animation hook
+function useCounter(end, duration = 1500, start = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    let startTime = null;
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * end));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [start, end, duration]);
+  return count;
+}
+
+// Intersection observer hook
+function useInView(threshold = 0.2) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true); }, { threshold });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return [ref, inView];
+}
+
+// Navbar
+function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  const links = [['Services', '#services'], ['Process', '#process'], ['Pricing', '#pricing'], ['About', '#testimonials']];
+  return (
+    <>
+      <nav className={`nav${scrolled ? ' scrolled' : ''}`}>
+        <div className="nav-logo">Capital<span>Edge</span></div>
+        <div className="nav-links">
+          {links.map(([label, href]) => <a key={label} href={href}>{label}</a>)}
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:'1rem'}}>
+          <button className="nav-cta" style={{display:'none'}} id="nav-cta-desktop">Book a Call</button>
+          <button className="nav-cta" style={{fontSize:'0.8rem'}}>Book a Call</button>
+          <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)}>
+            {menuOpen ? <Icon name="x"/> : <Icon name="menu"/>}
+          </button>
+        </div>
+      </nav>
+      <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
+        {links.map(([label, href]) => <a key={label} href={href} onClick={() => setMenuOpen(false)}>{label}</a>)}
+        <button className="nav-cta" onClick={() => setMenuOpen(false)}>Book a Strategy Call</button>
+      </div>
+    </>
+  );
+}
+
+// Hero
+function Hero() {
+  return (
+    <section className="hero">
+      <div className="hero-bg">
+        <div className="hero-bg-grid"/>
+        <div className="hero-blob hero-blob-1"/>
+        <div className="hero-blob hero-blob-2"/>
+      </div>
+      <div className="hero-accent-line"/>
+      <div className="hero-inner">
+        <div>
+          <div className="hero-eyebrow fade-up">
+            <div className="hero-eyebrow-line"/>
+            <span className="hero-eyebrow-text">Fintech + Business Advisory</span>
+          </div>
+          <h1 className="fade-up fade-up-1">
+            Where <em>Capital</em><br/>Meets Business<br/>Transformation
+          </h1>
+          <p className="hero-desc fade-up fade-up-2">
+            We help startups and enterprises navigate financial complexity, unlock growth capital, and build resilient operating models — all under one roof.
+          </p>
+          <div className="hero-actions fade-up fade-up-3">
+            <button className="btn-primary">
+              Book a Free Strategy Call <Icon name="arrow"/>
+            </button>
+            <button className="btn-outline">
+              View Our Services
+            </button>
+          </div>
+          <div className="hero-trust fade-up fade-up-4">
+            <div className="hero-trust-avatars">
+              {[['AR','#1a6b52','#d4ede5'],['SK','#854F0B','#FAEEDA'],['MR','#185FA5','#E6F1FB'],['VP','#3C3489','#EEEDFE']].map(([initials, color, bg], i) => (
+                <div key={i} className="hero-trust-avatar" style={{background: bg, color}}>{initials}</div>
+              ))}
+            </div>
+            <span className="hero-trust-text"><strong>180+ businesses</strong> advised across India</span>
+          </div>
+        </div>
+        <div className="hero-card-wrap fade-up fade-up-2">
+          <div className="hero-card">
+            <div className="hero-card-label">Portfolio Performance</div>
+            <div className="hero-card-metric">₹240Cr <span>↑ 34%</span></div>
+            <div className="hero-card-bar-wrap">
+              {[['Capital Deployed','82%'],['ROI Achieved','94%'],['Client Retention','96%']].map(([label, pct]) => (
+                <div key={label}>
+                  <div className="hero-card-bar-row"><span>{label}</span><span style={{color:'var(--teal)',fontWeight:500}}>{pct}</span></div>
+                  <div className="hero-card-bar"><div className="hero-card-bar-fill" style={{width: pct}}/></div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="hero-card-mini">
+            {[['₹75K','Avg. Monthly Retainer'],['6 mo','Avg. ROI Timeline'],['A+','Compliance Rating']].map(([val, label]) => (
+              <div key={label} className="hero-card-mini-item">
+                <div className="hero-card-mini-val">{val}</div>
+                <div className="hero-card-mini-label">{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Ticker
+function Ticker() {
+  const items = ['Fintech Advisory','RBI Compliance','Capital Raising','Business Consulting','M&A Support','Risk Audits','Go-To-Market','Unit Economics','Investor Readiness','Financial Modelling'];
+  return (
+    <div className="ticker">
+      <div className="ticker-track">
+        {[...items, ...items].map((item, i) => (
+          <span key={i} className="ticker-item">
+            <span className="ticker-dot"/>
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Stats
+function Stats() {
+  const [ref, inView] = useInView();
+  const stats = [
+    { num: 240, suffix: 'Cr+', label: 'Capital Deployed', prefix: '₹' },
+    { num: 180, suffix: '+', label: 'Businesses Advised' },
+    { num: 94, suffix: '%', label: 'Client Retention Rate' },
+    { num: 8, suffix: '+', label: 'Years of Experience' },
+  ];
+  return (
+    <div className="stats">
+      <div className="stats-inner">
+        <div className="stats-grid" ref={ref}>
+          {stats.map(({ num, suffix, label, prefix = '' }, i) => {
+            const count = useCounter(num, 1400, inView);
+            return (
+              <div key={label} className="stat-item">
+                <div className="stat-num">{prefix}{inView ? count : 0}<span className="stat-unit">{suffix}</span></div>
+                <div className="stat-label">{label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Services
+function Services() {
+  const [ref, inView] = useInView(0.1);
+  const services = [
+    { icon: 'fintech', num: '01', title: 'Fintech Advisory', desc: 'End-to-end guidance on payment systems, lending frameworks, digital banking, and fintech product architecture tailored for the Indian regulatory landscape.', tags: ['Payment Systems','Digital Lending','UPI/NACH','NBFC Setup'] },
+    { icon: 'consulting', num: '02', title: 'Business Consulting', desc: 'Strategic advisory on market entry, operating model design, P&L optimisation, and go-to-market execution for high-growth companies.', tags: ['Market Entry','Unit Economics','GTM Strategy','OKR Frameworks'] },
+    { icon: 'capital', num: '03', title: 'Capital Raising', desc: 'From Series A readiness to debt financing — we build investor-ready narratives, data rooms, and warm introductions to the right capital partners.', tags: ['Fundraise Readiness','Investor Decks','Due Diligence','VC Intros'] },
+    { icon: 'compliance', num: '04', title: 'Compliance & Risk', desc: 'Comprehensive regulatory mapping, KYC/AML frameworks, risk audits, and governance structures that keep you ahead of the regulator.', tags: ['RBI Compliance','KYC/AML','Risk Audits','Governance'] },
+  ];
+  return (
+    <div className="services-bg" id="services">
+      <div className="section" ref={ref}>
+        <div className="section-header">
+          <div className="eyebrow"><div className="eyebrow-line"/><span className="eyebrow-text">What We Do</span></div>
+          <h2 className="section-title">Integrated advisory for<br/><em>the modern business</em></h2>
+          <p className="section-desc">We sit at the intersection of finance and business transformation — so you only need one partner to cover it all.</p>
+        </div>
+        <div className="services-grid">
+          {services.map((s, i) => (
+            <div key={s.num} className={`service-card fade-up fade-up-${i + 1}`} style={inView ? {} : {opacity: 0}}>
+              <div className="service-num">{s.num}</div>
+              <div className="service-icon-wrap"><Icon name={s.icon}/></div>
+              <h3 className="service-title">{s.title}</h3>
+              <p className="service-desc">{s.desc}</p>
+              <div className="service-tags">{s.tags.map(t => <span key={t} className="tag">{t}</span>)}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Process
+function Process() {
+  const steps = [
+    { num: '01', title: 'Discovery & Audit', desc: 'We deep-dive into your financials, regulatory posture, market positioning, and team structure to build a clear baseline picture.' },
+    { num: '02', title: 'Strategy & Roadmap', desc: 'Co-create a 90-day action plan with clear milestones, KPIs, and accountability frameworks — no vague slides, only executable plans.' },
+    { num: '03', title: 'Execution & Scale', desc: 'Hands-on implementation support, weekly check-ins, investor introductions, and continuous course correction as your business evolves.' },
+  ];
+  return (
+    <div className="process-bg" id="process">
+      <div className="process-section">
+        <div className="section-header">
+          <div className="eyebrow"><div className="eyebrow-line"/><span className="eyebrow-text">How It Works</span></div>
+          <h2 className="section-title">Simple. Structured.<br/><em style={{color:'#e8d5a8'}}>Measurable.</em></h2>
+          <p className="section-desc">Three phases designed to take you from complexity to clarity, fast.</p>
+        </div>
+        <div className="process-steps">
+          {steps.map((s, i) => (
+            <div key={s.num} className={`process-step fade-up fade-up-${i + 1}`}>
+              <div className="process-step-num">{s.num}</div>
+              <h3 className="process-step-title">{s.title}</h3>
+              <p className="process-step-desc">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Pricing
+function Pricing() {
+  const plans = [
+    {
+      name: 'Starter', desc: 'For early-stage startups validating their financial model and regulatory standing.',
+      price: '₹25K', period: '/month', badge: null, featured: false,
+      features: ['2 advisory sessions/month', 'Compliance health check', 'Financial model review', 'Email support'],
+      btn: 'Get started', btnClass: 'plan-btn-outline'
+    },
+    {
+      name: 'Growth', desc: 'For scale-ups that need active advisory, capital access, and execution support.',
+      price: '₹75K', period: '/month', badge: 'Most Popular', featured: true,
+      features: ['Weekly strategy calls', 'Investor deck & data room', 'Regulatory roadmap', 'Dedicated consultant', 'Warm investor intros'],
+      btn: 'Book a call', btnClass: 'plan-btn-fill'
+    },
+    {
+      name: 'Enterprise', desc: 'For established companies needing an embedded advisory team at board level.',
+      price: 'Custom', period: '', badge: null, featured: false,
+      features: ['Full-service engagement', 'Board-level advisory', 'M&A / fundraise support', 'On-site team access', 'Regulatory representation'],
+      btn: 'Contact us', btnClass: 'plan-btn-outline'
+    },
+  ];
+  return (
+    <div className="pricing-bg" id="pricing">
+      <div className="section">
+        <div className="section-header">
+          <div className="eyebrow"><div className="eyebrow-line"/><span className="eyebrow-text">Pricing</span></div>
+          <h2 className="section-title">Flexible engagement<br/><em>models</em></h2>
+          <p className="section-desc">Choose the tier that fits your current stage. Upgrade as you grow.</p>
+        </div>
+        <div className="pricing-grid">
+          {plans.map((p, i) => (
+            <div key={p.name} className={`plan-card${p.featured ? ' featured' : ''} fade-up fade-up-${i + 1}`}>
+              {p.badge && <span className="plan-badge">{p.badge}</span>}
+              <div className="plan-name">{p.name}</div>
+              <div className="plan-desc">{p.desc}</div>
+              <div className="plan-price">
+                <span className="plan-price-val">{p.price}</span>
+                <span className="plan-price-period">{p.period}</span>
+              </div>
+              <ul className="plan-features">
+                {p.features.map(f => <li key={f}>{f}</li>)}
+              </ul>
+              <button className={`plan-btn ${p.btnClass}`}>{p.btn}</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Testimonials
+function Testimonials() {
+  const testimonials = [
+    { quote: 'They helped us restructure our lending product and achieve RBI readiness in under 3 months. The capital strategy they built became the backbone of our Series A raise.', name: 'Arjun Rajan', role: 'Founder, LendBridge', initials: 'AR', bg: '#d4ede5', color: '#085041' },
+    { quote: 'The business consulting team redesigned our unit economics from scratch. We went from burning ₹40L per month to EBITDA-positive in just 6 months.', name: 'Sneha Krishnan', role: 'COO, RetailPro India', initials: 'SK', bg: '#FAEEDA', color: '#633806' },
+    { quote: 'CapitalEdge guided us through our NBFC license application while simultaneously building our investor deck. We closed our seed round 2 months after engaging them.', name: 'Vikram Patel', role: 'CEO, CreditNest', initials: 'VP', bg: '#EEEDFE', color: '#3C3489' },
+    { quote: 'Their compliance framework saved us from a potential RBI notice. The team understands both the letter of the regulation and the business pragmatics. Truly rare.', name: 'Meera Iyer', role: 'CFO, PaySphere', initials: 'MI', bg: '#E6F1FB', color: '#0C447C' },
+  ];
+  return (
+    <div className="testimonials-bg" id="testimonials">
+      <div className="section">
+        <div className="section-header">
+          <div className="eyebrow"><div className="eyebrow-line"/><span className="eyebrow-text">Client Voices</span></div>
+          <h2 className="section-title">Trusted by builders<br/><em>and operators</em></h2>
+          <p className="section-desc">From seed-stage startups to publicly listed enterprises — real outcomes, real clients.</p>
+        </div>
+        <div className="testimonials-grid">
+          {testimonials.map((t, i) => (
+            <div key={t.name} className={`testimonial-card fade-up fade-up-${i + 1}`}>
+              <div className="testimonial-rating">{Array(5).fill(0).map((_, j) => <span key={j} className="star">★</span>)}</div>
+              <p className="testimonial-quote">{t.quote}</p>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar" style={{background: t.bg, color: t.color}}>{t.initials}</div>
+                <div>
+                  <div className="testimonial-name">{t.name}</div>
+                  <div className="testimonial-role">{t.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// CTA
+function CTA() {
+  return (
+    <div className="cta-bg">
+      <div className="cta-section">
+        <div className="cta-inner">
+          <div>
+            <h2 className="cta-title">Ready to scale<br/>with <em>confidence</em>?</h2>
+            <p className="cta-desc">Book a free 30-minute strategy session. No pitch — just a clear diagnosis of where you stand and what's possible.</p>
+          </div>
+          <div className="cta-actions">
+            <button className="btn-white">Schedule Free Call →</button>
+            <button className="btn-ghost">View Case Studies</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Footer
+function Footer() {
+  const cols = [
+    { title: 'Services', links: ['Fintech Advisory', 'Business Consulting', 'Capital Raising', 'Compliance & Risk', 'M&A Advisory'] },
+    { title: 'Company', links: ['About Us', 'Team', 'Case Studies', 'Blog', 'Careers'] },
+    { title: 'Contact', links: ['Chennai, Tamil Nadu', 'hello@capitaledge.in', '+91 98400 00000', 'LinkedIn', 'Schedule a Call'] },
+  ];
+  return (
+    <footer className="footer">
+      <div className="footer-inner">
+        <div className="footer-top">
+          <div>
+            <div className="footer-brand-name">Capital<span>Edge</span></div>
+            <p className="footer-brand-desc">Fintech advisory and business consulting for the next generation of Indian companies. Where capital strategy meets business growth.</p>
+          </div>
+          {cols.map(col => (
+            <div key={col.title}>
+              <div className="footer-col-title">{col.title}</div>
+              <ul className="footer-links">
+                {col.links.map(link => <li key={link}><a href="#">{link}</a></li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="footer-bottom">
+          <span className="footer-copy">© 2025 CapitalEdge Advisory Pvt. Ltd. All rights reserved.</span>
+          <div className="footer-legal">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Disclaimer</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// App
+function App() {
+  return (
+    <>
+      <Nav/>
+      <Hero/>
+      <Ticker/>
+      <Stats/>
+      <Services/>
+      <Process/>
+      <Pricing/>
+      <Testimonials/>
+      <CTA/>
+      <Footer/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
